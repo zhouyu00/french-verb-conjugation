@@ -1,7 +1,7 @@
 {
   "meta": {
     "lastTouchedVersion": "2026.3.8",
-    "lastTouchedAt": "2026-03-29T22:11:33.155Z"
+    "lastTouchedAt": "2026-03-29T22:11:14.300Z"
   },
   "wizard": {
     "lastRunAt": "2026-03-05T11:15:21.053Z",
@@ -354,6 +354,8 @@
   "plugins": {
     "allow": [
       "openclaw-lark",
+      "feishu-greeting",
+      "miaoda-keepalive",
       "openclaw-extension-miaoda"
     ],
     "entries": {
@@ -363,14 +365,24 @@
       "openclaw-lark": {
         "enabled": true
       },
+      "feishu-greeting": {
+        "enabled": true,
+        "config": {
+          "message": "👋 Hi，我是**yuriy的 OpenClaw**，一只生活在飞书里的 🦞 小龙虾，我已准备就绪，有什么需要帮忙的随时说~ \n > 学习[OpenClaw x 飞书官方修炼指南](https://larkcommunity.feishu.cn/wiki/GGJPwJ2IfiTynVk2Vy4cZbRvn2f)，了解如何更高效的与我交流",
+          "targets": [
+            "ou_2458d9c0becde3ce8d02a3cc32a281de"
+          ]
+        }
+      },
+      "miaoda-keepalive": {
+        "enabled": true,
+        "config": {}
+      },
       "openclaw-extension-miaoda": {
         "enabled": true,
         "config": {
           "greeting": {
-            "message": "👋 Hi，我是**yuriy的 OpenClaw**，一只生活在飞书里的 🦞 小龙虾，我已准备就绪，有什么需要帮忙的随时说~ \n > 学习[OpenClaw x 飞书官方修炼指南](https://larkcommunity.feishu.cn/wiki/GGJPwJ2IfiTynVk2Vy4cZbRvn2f)，了解如何更高效的与我交流",
-            "targets": [
-              "ou_2458d9c0becde3ce8d02a3cc32a281de"
-            ]
+            "message": "👋 Hi，我是**yuriy的 OpenClaw**，一只生活在飞书里的 🦞 小龙虾，我已准备就绪，有什么需要帮忙的随时说~ \n > 学习[OpenClaw x 飞书官方修炼指南](https://larkcommunity.feishu.cn/wiki/GGJPwJ2IfiTynVk2Vy4cZbRvn2f)，了解如何更高效的与我交流"
           }
         }
       }
@@ -388,6 +400,14 @@
         "shasum": "2ce8efc9bb8814aaa5d6019d2eee4ed856712756",
         "resolvedAt": "2026-03-12T03:34:30.017Z",
         "installedAt": "2026-03-12T03:34:36.726Z"
+      },
+      "feishu-greeting": {
+        "source": "path",
+        "installPath": "./extensions/feishu-greeting"
+      },
+      "miaoda-keepalive": {
+        "source": "path",
+        "installPath": "./extensions/miaoda-keepalive"
       },
       "openclaw-extension-miaoda": {
         "source": "npm",
