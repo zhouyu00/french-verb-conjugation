@@ -1,7 +1,7 @@
 {
   "meta": {
     "lastTouchedVersion": "2026.3.8",
-    "lastTouchedAt": "2026-04-08T18:01:26.316Z"
+    "lastTouchedAt": "2026-04-10T01:37:36.281Z"
   },
   "wizard": {
     "lastRunAt": "2026-03-05T11:15:21.053Z",
@@ -61,6 +61,7 @@
           {
             "id": "miaoda-model-auto",
             "name": "妙搭",
+            "api": "openai-completions",
             "reasoning": false,
             "input": [
               "text"
@@ -77,6 +78,7 @@
           {
             "id": "miaoda-auto-multimodal",
             "name": "妙搭多模态",
+            "api": "openai-completions",
             "reasoning": false,
             "input": [
               "text",
@@ -90,6 +92,93 @@
             },
             "contextWindow": 200000,
             "maxTokens": 8192
+          },
+          {
+            "id": "miaoda-model-flash",
+            "name": "妙搭 Flash",
+            "api": "openai-completions",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          },
+          {
+            "id": "glm-5",
+            "name": "GLM-5.1",
+            "api": "openai-completions",
+            "reasoning": true,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 30000
+          },
+          {
+            "id": "qwen-3.6-plus",
+            "name": "Qwen 3.6",
+            "api": "openai-completions",
+            "reasoning": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 16000
+          },
+          {
+            "id": "minimax-m2.7",
+            "name": "MiniMax M2.7",
+            "api": "openai-completions",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 16000
+          },
+          {
+            "id": "doubao-seed-2.0-pro",
+            "name": "豆包 Seed 2.0 Pro",
+            "api": "openai-completions",
+            "reasoning": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 200000,
+            "maxTokens": 16000
           }
         ]
       }
@@ -107,6 +196,21 @@
         },
         "miaoda/miaoda-auto-multimodal": {
           "alias": "Miaoda Multimodal"
+        },
+        "miaoda/miaoda-model-flash": {
+          "alias": "Miaoda Flash"
+        },
+        "miaoda/glm-5": {
+          "alias": "GLM-5.1"
+        },
+        "miaoda/qwen-3.6-plus": {
+          "alias": "Qwen 3.6"
+        },
+        "miaoda/minimax-m2.7": {
+          "alias": "MiniMax M2.7"
+        },
+        "miaoda/doubao-seed-2.0-pro": {
+          "alias": "豆包 Seed 2.0 Pro"
         }
       },
       "workspace": "/home/gem/workspace/agent/workspace",
@@ -206,6 +310,7 @@
     "bind": "loopback",
     "controlUi": {
       "allowedOrigins": [
+        "https://miaoda.feishu.cn",
         "https://zcn0f3ze2zgy-app_4jr861wru7unz-1859934402109479.aiforce.run"
       ],
       "dangerouslyDisableDeviceAuth": true
@@ -354,7 +459,8 @@
   "plugins": {
     "allow": [
       "openclaw-lark",
-      "openclaw-extension-miaoda"
+      "openclaw-extension-miaoda",
+      "openclaw-extension-miaoda-coding"
     ],
     "entries": {
       "feishu": {
@@ -401,6 +507,19 @@
         "shasum": "0eb1048fd67501832163e4f85b57b445440c218c",
         "resolvedAt": "2026-04-08T18:01:16.959Z",
         "installedAt": "2026-04-08T18:01:16.987Z"
+      },
+      "openclaw-extension-miaoda-coding": {
+        "source": "npm",
+        "spec": "@lark-apaas/openclaw-extension-miaoda-coding",
+        "installPath": "/home/gem/workspace/agent/extensions/openclaw-extension-miaoda-coding",
+        "version": "1.0.8",
+        "resolvedName": "@lark-apaas/openclaw-extension-miaoda-coding",
+        "resolvedVersion": "1.0.8",
+        "resolvedSpec": "@lark-apaas/openclaw-extension-miaoda-coding@1.0.8",
+        "integrity": "sha512-uxlLtgH2CTwz56UTaZD+n/x1p2a3Q01o3Og7oLUJCm6izWHXFEI1SQhNnCPggrfSam49KFir8xB64tY4T9dt2Q==",
+        "shasum": "058eadf5bc71ae87f79b5096b9d96f4afb89a9db",
+        "resolvedAt": "2026-04-09T17:09:57.144Z",
+        "installedAt": "2026-04-09T17:09:57.144Z"
       }
     }
   }

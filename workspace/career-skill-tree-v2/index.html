@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>程序员职业发展规划</title>
+    
+    <!-- React CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --primary-light: #38bdf8;
+            --secondary: #6366f1;
+            --accent: #8b5cf6;
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.8);
+            --bg-card-hover: rgba(51, 65, 85, 0.9);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(148, 163, 184, 0.1);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient-1: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%);
+            --gradient-2: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 30px rgba(14, 165, 233, 0.3);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Background Animation */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+            background-image: 
+                linear-gradient(rgba(14, 165, 233, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 165, 233, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        .bg-glow {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(ellipse at 20% 20%, rgba(14, 165, 233, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Container */
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 48px 0 32px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+            padding: 6px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .tab-btn.active {
+            background: var(--gradient-1);
+            color: white;
+            box-shadow: var(--shadow-lg), 0 0 20px rgba(14, 165, 233, 0.4);
+        }
+        
+        .tab-icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Card Styles */
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 28px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(14, 165, 233, 0.2);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Timeline Styles */
+        .timeline-container {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            flex-direction: row-reverse;
+        }
+        
+        .timeline-content {
+            width: calc(50% - 40px);
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .timeline-content:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-4px);
+        }
+        
+        .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+        }
+        
+        .timeline-item:nth-child(odd) .timeline-content::before {
+            right: -20px;
+            border-left-color: var(--bg-card);
+        }
+        
+        .timeline-item:nth-child(even) .timeline-content::before {
+            left: -20px;
+            border-right-color: var(--bg-card);
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: var(--gradient-1);
+            border-radius: 50%;
+            border: 4px solid var(--bg-dark);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.5);
+            z-index: 2;
+        }
+        
+        .timeline-phase {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary-light);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .timeline-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .timeline-events {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .event-tag {
+            background: rgba(14, 165, 233, 0.1);
+            color: var(--primary-light);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(14, 165, 233, 0.2);
+        }
+        
+        .event-detail {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 500px; }
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .detail-label {
+            color: var(--text-secondary);
+        }
+        
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        /* Skill Tree Styles */
+        .skill-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .skill-category {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        
+        .skill-category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .skill-category-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        
+        .skill-category-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .skill-item {
+            margin-bottom: 16px;
+        }
+        
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .skill-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        
+        .skill-level {
+            font-size: 0.85rem;
+            color: var(--primary-light);
+            font-weight: 600;
+            min-width: 24px;
+            text-align: right;
+        }
+        
+        .slider-container {
+            position: relative;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .slider-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: var(--gradient-1);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .slider-input {
+            position: absolute;
+            left: 0;
+            top: -6px;
+            width: 100%;
+            height: 20px;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+        
+        /* Radar Chart Container */
+        .chart-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* Analysis Section */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .career-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .career-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .career-card:hover::before {
+            opacity: 1;
+        }
+        
+        .career-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .career-card.high-potential {
+            border-color: rgba(16, 185, 129, 0.3);
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, var(--bg-card) 100%);
+        }
+        
+        .career-card.medium-potential {
+            border-color: rgba(245, 158, 11, 0.3);
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, var(--bg-card) 100%);
+        }
+        
+        .career-card.low-potential {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, var(--bg-card) 100%);
+        }
+        
+        .career-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        
+        .career-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+        
+        .potential-score {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .career-card.high-potential .potential-score {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        .career-card.medium-potential .potential-score {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        .career-card.low-potential .potential-score {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        
+        .career-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        
+        .career-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        
+        .career-tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .career-tag.required {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+        
+        .career-tag.gap {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+        
+        .advice-box {
+            background: rgba(14, 165, 233, 0.1);
+            border-left: 3px solid var(--primary);
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .advice-box.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+        }
+        
+        /* Path Recommendation */
+        .path-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--border);
+        }
+        
+        .path-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .path-steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .path-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            background: rgba(255,255,255,0.05);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            max-width: 250px;
+        }
+        
+        .step-arrow {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .tab-nav {
+                flex-direction: column;
+                padding: 8px;
+            }
+            
+            .tab-btn {
+                padding: 12px 16px;
+            }
+            
+            .timeline-line {
+                left: 20px;
+            }
+            
+            .timeline-item,
+            .timeline-item:nth-child(odd) {
+                flex-direction: column;
+            }
+            
+            .timeline-content {
+                width: calc(100% - 50px);
+                margin-left: 50px;
+            }
+            
+            .timeline-content::before {
+                display: none;
+            }
+            
+            .timeline-dot {
+                left: 20px;
+            }
+            
+            .skill-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+            
+            .path-steps {
+                flex-direction: column;
+            }
+            
+            .step-arrow {
+                transform: rotate(90deg);
+            }
+        }
+        
+        /* Level indicators */
+        .level-indicator {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+        }
+        
+        .level-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .level-dot.active {
+            background: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+        
+        /* Reset Button */
+        .reset-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+        }
+        
+        .reset-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+        
+        /* Save indicator */
+        .save-indicator {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div id="root"></div>
+    <div class="save-indicator" id="saveIndicator">已自动保存</div>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+        
+        // Timeline Data
+        const timelineData = [
+            {
+                phase: "初中阶段",
+                title: "编程启蒙期",
+                events: ["NOIP普及组", "NOIP提高组"],
+                details: {
+                    time: "每年9-11月",
+                    difficulty: "入门级",
+                    advice: "从C++基础语法开始，重点培养逻辑思维。每天练习1-2小时，积累300+题目。"
+                }
+            },
+            {
+                phase: "高中阶段",
+                title: "竞赛强化期",
+                events: ["NOIP提高组", "省选/国赛", "青少年信息学"],
+                details: {
+                    time: "高一至高三",
+                    difficulty: "中等",
+                    advice: "深入学习算法（图论、DP、数据结构），争取省一奖项，为强基计划/自主招生铺路。"
+                }
+            },
+            {
+                phase: "本科阶段",
+                title: "专业筑基期",
+                events: ["ACM-ICPC", "数学建模美赛", "国赛", "CCF-CSP", "互联网+", "挑战杯"],
+                details: {
+                    time: "大一至大四",
+                    difficulty: "中高",
+                    advice: "ACM需团队配合，建议从区域赛起步；数学建模培养综合能力；保持GPA 3.5+，积累项目经验。"
+                }
+            },
+            {
+                phase: "研究生阶段",
+                title: "专精突破期",
+                events: ["顶会论文(ICML/NeurIPS/CVPR)", "大厂实习", "开源项目贡献"],
+                details: {
+                    time: "研一至研三",
+                    difficulty: "高级",
+                    advice: "算法方向争取CCF-A类论文；工程方向积累2-3段大厂实习；全栈参与知名开源项目。"
+                }
+            },
+            {
+                phase: "职场阶段",
+                title: "职业发展期",
+                events: ["秋招/春招", "大厂Offer", "技术成长", "架构师/管理层"],
+                details: {
+                    time: "毕业起持续",
+                    difficulty: "持续",
+                    advice: "前3年深耕技术栈，3-5年往架构师或管理转型。保持技术敏感度，35岁前完成赛道切换。"
+                }
+            }
+        ];
+        
+        // Skills Data
+        const initialSkills = {
+            languages: {
+                icon: "💻",
+                title: "编程语言",
+                items: [
+                    { name: "Python", level: 0 },
+                    { name: "C++", level: 0 },
+                    { name: "Java", level: 0 },
+                    { name: "Go", level: 0 },
+                    { name: "Rust", level: 0 }
+                ]
+            },
+            algorithms: {
+                icon: "🧩",
+                title: "数据结构算法",
+                items: [
+                    { name: "基础数据结构", level: 0 },
+                    { name: "排序与搜索", level: 0 },
+                    { name: "动态规划", level: 0 },
+                    { name: "图论算法", level: 0 },
+                    { name: "高级算法", level: 0 }
+                ]
+            },
+            system: {
+                icon: "🏗️",
+                title: "系统设计",
+                items: [
+                    { name: "分布式系统", level: 0 },
+                    { name: "微服务架构", level: 0 },
+                    { name: "高并发设计", level: 0 },
+                    { name: "数据库设计", level: 0 }
+                ]
+            },
+            frontend: {
+                icon: "🎨",
+                title: "前端技术",
+                items: [
+                    { name: "HTML/CSS/JavaScript", level: 0 },
+                    { name: "React/Vue/Angular", level: 0 },
+                    { name: "Node.js", level: 0 },
+                    { name: "移动端开发", level: 0 }
+                ]
+            },
+            backend: {
+                icon: "⚙️",
+                title: "后端技术",
+                items: [
+                    { name: "Spring/Django/Flask", level: 0 },
+                    { name: "消息队列", level: 0 },
+                    { name: "缓存技术", level: 0 },
+                    { name: "API设计", level: 0 }
+                ]
+            },
+            database: {
+                icon: "🗄️",
+                title: "数据库",
+                items: [
+                    { name: "MySQL/PostgreSQL", level: 0 },
+                    { name: "Redis/MongoDB", level: 0 },
+                    { name: "ES/ClickHouse", level: 0 },
+                    { name: "SQL优化", level: 0 }
+                ]
+            },
+            devops: {
+                icon: "🚀",
+                title: "运维部署",
+                items: [
+                    { name: "Linux系统", level: 0 },
+                    { name: "Docker/K8s", level: 0 },
+                    { name: "CI/CD", level: 0 },
+                    { name: "云原生(AWS/阿里云)", level: 0 }
+                ]
+            },
+            soft: {
+                icon: "🤝",
+                title: "软技能",
+                items: [
+                    { name: "沟通协作", level: 0 },
+                    { name: "项目管理", level: 0 },
+                    { name: "技术写作", level: 0 },
+                    { name: "英语能力", level: 0 }
+                ]
+            }
+        };
+        
+        // Career Paths Data
+        const careerPaths = [
+            {
+                id: "backend",
+                name: "后端开发工程师",
+                description: "构建服务端应用，处理业务逻辑和数据存储",
+                required: ["languages", "backend", "database", "system"],
+                tags: ["需求量大", "薪资稳定"]
+            },
+            {
+                id: "algorithm",
+                name: "算法工程师",
+                description: "从事AI/ML算法研究与落地，需数学和编程功底",
+                required: ["languages", "algorithms", "soft"],
+                tags: ["顶尖薪资", "学历要求高"]
+            },
+            {
+                id: "frontend",
+                name: "前端开发工程师",
+                description: "负责用户界面开发与交互体验优化",
+                required: ["frontend", "languages", "soft"],
+                tags: ["入门友好", "变化快"]
+            },
+            {
+                id: "embedded",
+                name: "嵌入式工程师",
+                description: "开发硬件相关的嵌入式软件系统",
+                required: ["languages", "algorithms"],
+                tags: ["硬件结合", "经验值钱"]
+            },
+            {
+                id: "autonomous",
+                name: "自动驾驶工程师",
+                description: "开发自动驾驶感知/规划/控制算法",
+                required: ["languages", "algorithms", "system"],
+                tags: ["前沿领域", "竞争激烈"]
+            },
+            {
+                id: "devops",
+                name: "DevOps/SRE",
+                description: "保障系统稳定性，优化开发运维流程",
+                required: ["devops", "backend", "database"],
+                tags: ["全栈能力", "责任大"]
+            },
+            {
+                id: "fullstack",
+                name: "全栈工程师",
+                description: "前后端通吃，独立负责完整产品",
+                required: ["frontend", "backend", "database", "devops"],
+                tags: ["创业友好", "要求高"]
+            },
+            {
+                id: "architect",
+                name: "架构师",
+                description: "设计系统整体架构，技术选型与规划",
+                required: ["system", "backend", "database", "soft"],
+                tags: ["资深岗位", "软技能重要"]
+            }
+        ];
+        
+        // Components
+        function TimelinePage() {
+            const [expanded, setExpanded] = useState(null);
+            
+            return (
+                <div className="tab-content">
+                    <div className="card">
+                        <div className="card-title">
+                            <span>📅</span>
+                            程序员职业发展关键节点
+                        </div>
+                        <p className="card-subtitle">点击各阶段查看详细备赛建议和时间规划</p>
+                    </div>
+                    
+                    <div className="timeline-container">
+                        <div className="timeline-line"></div>
+                        {timelineData.map((item, index) => (
+                            <div key={index} className="timeline-item">
+                                <div className="timeline-dot"></div>
+                                <div 
+                                    className="timeline-content"
+                                    onClick={() => setExpanded(expanded === index ? null : index)}
+                                >
+                                    <div className="timeline-phase">{item.phase}</div>
+                                    <div className="timeline-title">{item.title}</div>
+                                    <div className="timeline-events">
+                                        {item.events.map((event, i) => (
+                                            <span key={i} className="event-tag">{event}</span>
+                                        ))}
+                                    </div>
+                                    {expanded === index && (
+                                        <div className="event-detail">
+                                            <div className="detail-row">
+                                                <span className="detail-label">时间窗口</span>
+                                                <span className="detail-value">{item.details.time}</span>
+                                            </div>
+                                            <div className="detail-row">
+                                                <span className="detail-label">难度等级</span>
+                                                <span className="detail-value">{item.details.difficulty}</span>
+                                            </div>
+                                            <div className="detail-row" style={{flexDirection: 'column', gap: '8px', marginTop: '12px'}}>
+                                                <span className="detail-label">备赛建议</span>
+                                                <span style={{color: 'var(--text-primary)', lineHeight: 1.7}}>{item.details.advice}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+        
+        function SkillsPage({ skills, setSkills }) {
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+            
+            // Calculate category averages
+            const categoryScores = useMemo(() => {
+                return Object.entries(skills).map(([key, category]) => {
+                    const avg = category.items.reduce((sum, item) => sum + item.level, 0) / category.items.length;
+                    return { key, title: category.title, score: Math.round(avg * 20) };
+                });
+            }, [skills]);
+            
+            useEffect(() => {
+                if (chartRef.current) {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                    
+                    const ctx = chartRef.current.getContext('2d');
+                    chartInstance.current = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: categoryScores.map(c => c.title),
+                            datasets: [{
+                                label: '能力评估',
+                                data: categoryScores.map(c => c.score),
+                                backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                                borderColor: 'rgba(14, 165, 233, 1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: 'rgba(14, 165, 233, 1)',
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: {
+                                        stepSize: 20,
+                                        color: 'rgba(148, 163, 184, 0.5)',
+                                        backdropColor: 'transparent'
+                                    },
+                                    grid: {
+                                        color: 'rgba(148, 163, 184, 0.1)'
+                                    },
+                                    angleLines: {
+                                        color: 'rgba(148, 163, 184, 0.1)'
+                                    },
+                                    pointLabels: {
+                                        color: '#f8fafc',
+                                        font: {
+                                            size: 12,
+                                            family: 'Inter'
+                                        }
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                return () => {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [categoryScores]);
+            
+            const updateSkill = (categoryKey, itemIndex, newLevel) => {
+                setSkills(prev => ({
+                    ...prev,
+                    [categoryKey]: {
+                        ...prev[categoryKey],
+                        items: prev[categoryKey].items.map((item, idx) => 
+                            idx === itemIndex ? { ...item, level: parseInt(newLevel) } : item
+                        )
+                    }
+                }));
+                
+                // Show save indicator
+                const indicator = document.getElementById('saveIndicator');
+                indicator.classList.add('show');
+                setTimeout(() => indicator.classList.remove('show'), 2000);
+            };
+            
+            const resetSkills = () => {
+                if (confirm('确定要重置所有技能评分吗？')) {
+                    setSkills(initialSkills);
+                    localStorage.removeItem('careerSkills');
+                }
+            };
+            
+            const levelLabels = ['入门', '初级', '中级', '高级', '专家'];
+            
+            return (
+                <div className="tab-content">
+                    <div className="card">
+                        <div className="card-title">
+                            <span>🎯</span>
+                            技能自评矩阵
+                        </div>
+                        <p className="card-subtitle">拖动滑块评估各项技能掌握程度 (0-5级)，数据自动保存</p>
+                    </div>
+                    
+                    <div className="skill-grid">
+                        {Object.entries(skills).map(([categoryKey, category]) => (
+                            <div key={categoryKey} className="skill-category">
+                                <div className="skill-category-header">
+                                    <div className="skill-category-icon">{category.icon}</div>
+                                    <div className="skill-category-title">{category.title}</div>
+                                </div>
+                                {category.items.map((item, itemIndex) => (
+                                    <div key={itemIndex} className="skill-item">
+                                        <div className="skill-header">
+                                            <span className="skill-name">{item.name}</span>
+                                            <span className="skill-level">
+                                                {item.level > 0 ? levelLabels[item.level - 1] : '未评估'}
+                                            </span>
+                                        </div>
+                                        <div className="slider-container">
+                                            <div className="slider-fill" style={{width: `${(item.level / 5) * 100}%`}}></div>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="5"
+                                                value={item.level}
+                                                className="slider-input"
+                                                onChange={(e) => updateSkill(categoryKey, itemIndex, e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="level-indicator">
+                                            {[1, 2, 3, 4, 5].map(l => (
+                                                <div key={l} className={`level-dot ${item.level >= l ? 'active' : ''}`}></div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="chart-section">
+                        <div className="card-title" style={{justifyContent: 'center', marginBottom: '24px'}}>
+                            <span>📊</span>
+                            能力雷达图
+                        </div>
+                        <div className="chart-container">
+                            <canvas ref={chartRef}></canvas>
+                        </div>
+                        <button className="reset-btn" onClick={resetSkills}>重置所有评分</button>
+                    </div>
+                </div>
+            );
+        }
+        
+        function AnalysisPage({ skills }) {
+            // Calculate potential for each career path
+            const careerResults = useMemo(() => {
+                return careerPaths.map(path => {
+                    let totalScore = 0;
+                    let maxScore = path.required.length * 5;
+                    let gaps = [];
+                    let strengths = [];
+                    
+                    path.required.forEach(categoryKey => {
+                        const category = skills[categoryKey];
+                        if (category) {
+                            const avgLevel = category.items.reduce((sum, item) => sum + item.level, 0) / category.items.length;
+                            totalScore += avgLevel;
+                            
+                            if (avgLevel >= 3) {
+                                strengths.push(category.title);
+                            } else if (avgLevel < 2) {
+                                gaps.push(category.title);
+                            }
+                        }
+                    });
+                    
+                    const potential = Math.round((totalScore / maxScore) * 100);
+                    let level = 'low';
+                    if (potential >= 70) level = 'high';
+                    else if (potential >= 45) level = 'medium';
+                    
+                    return {
+                        ...path,
+                        potential,
+                        level,
+                        gaps,
+                        strengths
+                    };
+                }).sort((a, b) => b.potential - a.potential);
+            }, [skills]);
+            
+            const topPath = careerResults[0];
+            
+            // Generate learning path
+            const learningPath = useMemo(() => {
+                if (!topPath) return [];
+                
+                const steps = [];
+                
+                // Find weakest required skill
+                topPath.required.forEach(key => {
+                    const category = skills[key];
+                    const avg = category.items.reduce((sum, i) => sum + i.level, 0) / category.items.length;
+                    if (avg < 3) {
+                        steps.push({
+                            category: category.title,
+                            priority: 'high',
+                            action: `强化${category.title}，提升至中级水平`
+                        });
+                    }
+                });
+                
+                // Add general advice
+                steps.push(
+                    { category: '项目实战', priority: 'medium', action: '完成2-3个相关领域实战项目' },
+                    { category: '面试准备', priority: 'medium', action: '针对性刷题，准备技术面' },
+                    { category: '持续学习', priority: 'low', action: '关注行业动态，保持技术敏感度' }
+                );
+                
+                return steps.slice(0, 4);
+            }, [topPath, skills]);
+            
+            return (
+                <div className="tab-content">
+                    <div className="card">
+                        <div className="card-title">
+                            <span>🔮</span>
+                            职业潜力分析
+                        </div>
+                        <p className="card-subtitle">基于你的技能评分，AI分析各职业方向的匹配度</p>
+                    </div>
+                    
+                    <div className="analysis-grid">
+                        {careerResults.map((career) => (
+                            <div key={career.id} className={`career-card ${career.level}-potential`}>
+                                <div className="career-header">
+                                    <div className="career-title">{career.name}</div>
+                                    <div className="potential-score">{career.potential}</div>
+                                </div>
+                                <p className="career-desc">{career.description}</p>
+                                <div className="career-tags">
+                                    {career.tags.map((tag, i) => (
+                                        <span key={i} className="career-tag">{tag}</span>
+                                    ))}
+                                    {career.strengths.map((s, i) => (
+                                        <span key={`s${i}`} className="career-tag required">{s}</span>
+                                    ))}
+                                    {career.gaps.map((g, i) => (
+                                        <span key={`g${i}`} className="career-tag gap">需补: {g}</span>
+                                    ))}
+                                </div>
+                                {career.level === 'low' && career.gaps.length > 0 && (
+                                    <div className="advice-box warning">
+                                        <strong>避坑建议：</strong>
+                                        {career.gaps.length > 2 
+                                            ? `该方向与当前技能匹配度较低，建议先补足${career.gaps.slice(0, 2).join('、')}等基础能力，或考虑转型到更匹配的方向。`
+                                            : `${career.gaps.join('、')}基础薄弱，建议系统学习后再评估。`
+                                        }
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    
+                    {topPath && (
+                        <div className="path-section">
+                            <div className="path-title">
+                                <span style={{marginRight: '8px'}}>🎯</span>
+                                最优路径推荐：{topPath.name}
+                            </div>
+                            <div className="path-steps">
+                                {learningPath.map((step, index) => (
+                                    <React.Fragment key={index}>
+                                        <div className="path-step">
+                                            <div className="step-number">{index + 1}</div>
+                                            <div className="step-content">
+                                                <strong style={{color: 'var(--primary-light)'}}>{step.category}</strong>
+                                                <div style={{marginTop: '4px', fontSize: '0.85rem'}}>{step.action}</div>
+                                            </div>
+                                        </div>
+                                        {index < learningPath.length - 1 && (
+                                            <span className="step-arrow">→</span>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        
+        function App() {
+            const [activeTab, setActiveTab] = useState('timeline');
+            const [skills, setSkills] = useState(initialSkills);
+            
+            // Load skills from localStorage
+            useEffect(() => {
+                const saved = localStorage.getItem('careerSkills');
+                if (saved) {
+                    try {
+                        setSkills(JSON.parse(saved));
+                    } catch (e) {
+                        console.error('Failed to parse saved skills');
+                    }
+                }
+            }, []);
+            
+            // Save skills to localStorage
+            useEffect(() => {
+                localStorage.setItem('careerSkills', JSON.stringify(skills));
+            }, [skills]);
+            
+            const tabs = [
+                { id: 'timeline', label: '职业发展时间轴', icon: '📅' },
+                { id: 'skills', label: '技能树 & 评分', icon: '🎯' },
+                { id: 'analysis', label: '潜力分析 & 建议', icon: '🔮' }
+            ];
+            
+            return (
+                <div className="app-container">
+                    <header className="header">
+                        <h1>程序员职业发展规划</h1>
+                        <p>全周期成长指南 · 技能评估 · 职业路径分析</p>
+                    </header>
+                    
+                    <nav className="tab-nav">
+                        {tabs.map(tab => (
+                            <button
+                                key={tab.id}
+                                className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                                onClick={() => setActiveTab(tab.id)}
+                            >
+                                <span>{tab.icon}</span>
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+                    
+                    {activeTab === 'timeline' && <TimelinePage />}
+                    {activeTab === 'skills' && <SkillsPage skills={skills} setSkills={setSkills} />}
+                    {activeTab === 'analysis' && <AnalysisPage skills={skills} />}
+                </div>
+            );
+        }
+        
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

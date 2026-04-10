@@ -2,7 +2,7 @@
   "providers": {
     "miaoda": {
       "baseUrl": "https://innerapi.aiforce.cloud/innerapi/api/v1/sgw/model/proxy",
-      "apiKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIxODgzOTg3NjE4X2FwcF80anI4NjF3cnU3dW56X3ByZXZpZXciLCJleHAiOjE3NzYwMDYyMjUsIm5iZiI6MTc3NTc0NzAyNSwiaWF0IjoxNzc1NzQ3MDI1LCJqdGkiOiJjZDcyOGNmMC1hNTlkLTViNDUtZGVmOS1hODRhYmFkZTQ0MzYiLCJ0ZW5hbnRfaWQiOjE4ODM5ODc2MTgsInVzZXJfaWQiOjE4NTk5NzE5MDg0MTY1ODUsImFwcF9pZCI6ImFwcF80anI4NjF3cnU3dW56IiwiYXBwX2VudiI6InByZXZpZXciLCJhY2Nlc3Nfa2V5IjoiMTg4Mzk4NzYxOF9hcHBfNGpyODYxd3J1N3Vuel9wcmV2aWV3Iiwic2FuZGJveF9pZCI6IjE4NTk5MzQ0MDIxMDk0NzkifQ.HwA3VcdTeOaHLBHFtsX2Hlhnmfy7r2VFQ6fikIqjj8g",
+      "apiKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIxODgzOTg3NjE4X2FwcF80anI4NjF3cnU3dW56X3ByZXZpZXciLCJleHAiOjE3NzYwNDQyNzYsIm5iZiI6MTc3NTc4NTA3NiwiaWF0IjoxNzc1Nzg1MDc2LCJqdGkiOiJmYTY0YzNhZi0yN2M0LWY2MWEtNDJiNy1kMjhlODE1YmQwZmIiLCJ0ZW5hbnRfaWQiOjE4ODM5ODc2MTgsInVzZXJfaWQiOjE4NTk5NzE5MDg0MTY1ODUsImFwcF9pZCI6ImFwcF80anI4NjF3cnU3dW56IiwiYXBwX2VudiI6InByZXZpZXciLCJhY2Nlc3Nfa2V5IjoiMTg4Mzk4NzYxOF9hcHBfNGpyODYxd3J1N3Vuel9wcmV2aWV3Iiwic2FuZGJveF9pZCI6IjE4NTk5MzQ0MDIxMDk0NzkifQ.euMo2xOWdqoU3C6x-qxctQwIwlyfQNujS3vfOwm0Z0Y",
       "api": "openai-completions",
       "headers": {
         "x-api-key": "1883987618_app_4jr861wru7unz_preview"
@@ -11,6 +11,7 @@
         {
           "id": "miaoda-model-auto",
           "name": "妙搭",
+          "api": "openai-completions",
           "reasoning": false,
           "input": [
             "text"
@@ -22,12 +23,12 @@
             "cacheWrite": 0
           },
           "contextWindow": 200000,
-          "maxTokens": 8192,
-          "api": "openai-completions"
+          "maxTokens": 8192
         },
         {
           "id": "miaoda-auto-multimodal",
           "name": "妙搭多模态",
+          "api": "openai-completions",
           "reasoning": false,
           "input": [
             "text",
@@ -40,8 +41,94 @@
             "cacheWrite": 0
           },
           "contextWindow": 200000,
-          "maxTokens": 8192,
-          "api": "openai-completions"
+          "maxTokens": 8192
+        },
+        {
+          "id": "miaoda-model-flash",
+          "name": "妙搭 Flash",
+          "api": "openai-completions",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 8192
+        },
+        {
+          "id": "glm-5",
+          "name": "GLM-5.1",
+          "api": "openai-completions",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 30000
+        },
+        {
+          "id": "qwen-3.6-plus",
+          "name": "Qwen 3.6",
+          "api": "openai-completions",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 16000
+        },
+        {
+          "id": "minimax-m2.7",
+          "name": "MiniMax M2.7",
+          "api": "openai-completions",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 16000
+        },
+        {
+          "id": "doubao-seed-2.0-pro",
+          "name": "豆包 Seed 2.0 Pro",
+          "api": "openai-completions",
+          "reasoning": true,
+          "input": [
+            "text",
+            "image"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 200000,
+          "maxTokens": 16000
         }
       ]
     }

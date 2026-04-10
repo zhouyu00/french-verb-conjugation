@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhD Tracker — 博士申请进度追踪</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-deep: #060b18;
+  --bg-card: rgba(12, 22, 45, 0.75);
+  --bg-card-hover: rgba(16, 30, 58, 0.85);
+  --bg-input: rgba(8, 16, 35, 0.6);
+  --border: rgba(56, 120, 255, 0.12);
+  --border-active: rgba(56, 120, 255, 0.35);
+  --blue-1: #1a3a6e;
+  --blue-2: #2563eb;
+  --blue-3: #3b82f6;
+  --blue-4: #60a5fa;
+  --blue-5: #93c5fd;
+  --cyan: #22d3ee;
+  --indigo: #6366f1;
+  --green: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.3);
+  --amber: #f59e0b;
+  --text-primary: #e8edf5;
+  --text-secondary: #8b9ec2;
+  --text-muted: #4a5e82;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 60px rgba(37, 99, 235, 0.04);
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Background */
+.bg-layer {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  overflow: hidden;
+}
+.bg-layer .orb {
+  position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15;
+}
+.bg-layer .orb-1 { width: 600px; height: 600px; background: var(--blue-2); top: -200px; left: -100px; animation: float1 20s ease-in-out infinite; }
+.bg-layer .orb-2 { width: 500px; height: 500px; background: var(--indigo); bottom: -150px; right: -100px; animation: float2 25s ease-in-out infinite; }
+.bg-layer .orb-3 { width: 300px; height: 300px; background: var(--cyan); top: 40%; left: 60%; animation: float3 18s ease-in-out infinite; opacity: 0.08; }
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(56, 120, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 120, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+}
+@keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(40px, 30px); } }
+@keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-30px, -40px); } }
+@keyframes float3 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-20px, 25px); } }
+
+/* Container */
+.container {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto; padding: 0 24px;
+}
+
+/* Header */
+header {
+  padding: 48px 0 32px;
+  text-align: center;
+}
+.logo-row {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-bottom: 12px;
+}
+.logo-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--blue-2), var(--indigo));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: #fff;
+  box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+}
+h1 {
+  font-size: 28px; font-weight: 700; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff 0%, var(--blue-4) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle {
+  color: var(--text-secondary); font-size: 15px; font-weight: 400;
+  margin-top: 4px;
+}
+
+/* Target Banner */
+.target-banner {
+  margin: 0 auto 36px;
+  max-width: 720px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  backdrop-filter: blur(12px);
+  display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: center;
+}
+.target-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 500;
+}
+.target-item .icon-box {
+  width: 36px; height: 36px; border-radius: var(--radius-xs);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.target-item .icon-box.fr { background: rgba(37, 99, 235, 0.15); }
+.target-item .icon-box.ca { background: rgba(220, 38, 38, 0.15); }
+.target-item .icon-box.ielts { background: rgba(245, 158, 11, 0.15); }
+.target-item .icon-box.research { background: rgba(99, 102, 241, 0.15); }
+.target-label { color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.target-value { color: var(--text-primary); font-size: 14px; font-weight: 600; }
+
+/* Overall Progress */
+.overall-progress {
+  margin: 0 auto 48px; max-width: 720px;
+}
+.progress-header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 10px;
+}
+.progress-title { font-size: 13px; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; }
+.progress-pct {
+  font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700;
+  background: linear-gradient(90deg, var(--blue-4), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.progress-bar-bg {
+  height: 8px; background: rgba(37, 99, 235, 0.1); border-radius: 99px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--blue-2), var(--blue-3), var(--cyan));
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+.progress-bar-fill::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+/* Stages */
+.stages {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 64px;
+}
+.stage-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  backdrop-filter: blur(12px);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.stage-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--stage-color, var(--blue-3)), transparent);
+  opacity: 0.6;
+}
+.stage-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-active);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25), 0 0 40px rgba(37,99,235,0.06);
+}
+.stage-card.phase-1 { --stage-color: #3b82f6; }
+.stage-card.phase-2 { --stage-color: #6366f1; }
+.stage-card.phase-3 { --stage-color: #8b5cf6; }
+.stage-card.phase-4 { --stage-color: #06b6d4; }
+
+.stage-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.stage-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+  color: var(--stage-color, var(--blue-3)); opacity: 0.7;
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.stage-title {
+  font-size: 18px; font-weight: 700; color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+.stage-time {
+  font-size: 12px; color: var(--text-muted); font-weight: 500;
+  background: rgba(37, 99, 235, 0.08); padding: 3px 10px; border-radius: 99px;
+  white-space: nowrap;
+}
+
+.stage-progress {
+  margin: 16px 0 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.stage-progress-bar {
+  flex: 1; height: 4px; background: rgba(37,99,235,0.08); border-radius: 99px;
+  overflow: hidden;
+}
+.stage-progress-fill {
+  height: 100%; border-radius: 99px;
+  background: var(--stage-color, var(--blue-3));
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.stage-progress-text {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+  color: var(--text-secondary); min-width: 32px; text-align: right;
+}
+
+/* Tasks */
+.task-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.task-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--radius-xs);
+  cursor: pointer; transition: var(--transition);
+  user-select: none;
+}
+.task-item:hover { background: rgba(37, 99, 235, 0.06); }
+.task-checkbox {
+  width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0;
+  border: 2px solid var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  position: relative;
+}
+.task-checkbox svg {
+  width: 11px; height: 11px; opacity: 0; transition: var(--transition);
+  color: #fff;
+}
+.task-item.done .task-checkbox {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 8px var(--green-glow);
+}
+.task-item.done .task-checkbox svg { opacity: 1; }
+.task-text {
+  font-size: 14px; color: var(--text-secondary); font-weight: 400;
+  transition: var(--transition); line-height: 1.4;
+}
+.task-item.done .task-text {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+}
+
+/* Footer */
+footer {
+  text-align: center; padding: 32px 0 48px;
+  color: var(--text-muted); font-size: 12px;
+}
+footer a { color: var(--blue-4); text-decoration: none; }
+footer .reset-btn {
+  background: none; border: 1px solid var(--border); color: var(--text-muted);
+  font-size: 12px; padding: 6px 16px; border-radius: 99px; cursor: pointer;
+  font-family: inherit; transition: var(--transition); margin-top: 12px;
+  display: inline-block;
+}
+footer .reset-btn:hover { border-color: var(--border-active); color: var(--text-secondary); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--green); padding: 10px 24px; border-radius: 99px;
+  font-size: 13px; font-weight: 500; backdrop-filter: blur(12px);
+  opacity: 0; transition: all 0.35s ease; pointer-events: none; z-index: 100;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  header { padding: 32px 0 24px; }
+  h1 { font-size: 22px; }
+  .stages { grid-template-columns: 1fr; gap: 18px; }
+  .stage-card { padding: 22px; }
+  .target-banner { padding: 18px 20px; gap: 14px; }
+  .container { padding: 0 16px; }
+  .stage-title { font-size: 16px; }
+}
+@media (max-width: 480px) {
+  h1 { font-size: 20px; }
+  .logo-icon { width: 36px; height: 36px; font-size: 16px; }
+  .target-item { font-size: 13px; }
+  .target-item .icon-box { width: 32px; height: 32px; font-size: 16px; }
+}
+
+/* Entrance Animations */
+.stage-card {
+  opacity: 0; transform: translateY(20px);
+  animation: cardIn 0.5s ease forwards;
+}
+.stage-card:nth-child(1) { animation-delay: 0.1s; }
+.stage-card:nth-child(2) { animation-delay: 0.2s; }
+.stage-card:nth-child(3) { animation-delay: 0.3s; }
+.stage-card:nth-child(4) { animation-delay: 0.4s; }
+@keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
+
+.target-banner {
+  opacity: 0; animation: cardIn 0.5s 0.05s ease forwards;
+}
+.overall-progress {
+  opacity: 0; animation: cardIn 0.5s 0.08s ease forwards;
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+<div class="bg-grid"></div>
+
+<div class="container">
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">P</div>
+      <h1>PhD Application Tracker</h1>
+    </div>
+    <p class="subtitle">yuriy 的法国 / 加拿大博士申请进度追踪</p>
+  </header>
+
+  <!-- Target Banner -->
+  <div class="target-banner">
+    <div class="target-item">
+      <div class="icon-box fr">🇫🇷</div>
+      <div>
+        <div class="target-label">首选目标</div>
+        <div class="target-value">法国 CIFRE</div>
+      </div>
+    </div>
+    <div class="target-item">
+      <div class="icon-box ca">🇨🇦</div>
+      <div>
+        <div class="target-label">备选目标</div>
+        <div class="target-value">加拿大</div>
+      </div>
+    </div>
+    <div class="target-item">
+      <div class="icon-box ielts">🎯</div>
+      <div>
+        <div class="target-label">语言目标</div>
+        <div class="target-value">IELTS 6.5+</div>
+      </div>
+    </div>
+    <div class="target-item">
+      <div class="icon-box research">🔬</div>
+      <div>
+        <div class="target-label">研究方向</div>
+        <div class="target-value">C++ 工控上位机框架</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overall Progress -->
+  <div class="overall-progress">
+    <div class="progress-header">
+      <span class="progress-title">Overall Progress</span>
+      <span class="progress-pct" id="overall-pct">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="overall-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Stages -->
+  <div class="stages" id="stages"></div>
+
+  <footer>
+    <p>数据自动保存至浏览器本地存储</p>
+    <button class="reset-btn" id="reset-btn">重置所有进度</button>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STAGES_DATA = [
+  {
+    id: 'phase1',
+    num: 'Phase 01',
+    title: '打基础',
+    time: '现在 — 3 个月',
+    phase: 'phase-1',
+    tasks: [
+      { id: 'p1t1', text: '雅思备考（目标 6.5+）' },
+      { id: 'p1t2', text: '法语基础入门（A1-A2）' },
+      { id: 'p1t3', text: '整理个人简历（CV）' },
+      { id: 'p1t4', text: '阅读目标导师论文文献' },
+      { id: 'p1t5', text: '了解 CIFRE 申请流程与条件' },
+      { id: 'p1t6', text: '明确研究方向：C++ 工控上位机框架' },
+      { id: 'p1t7', text: '了解加拿大院校导师信息' },
+    ]
+  },
+  {
+    id: 'phase2',
+    num: 'Phase 02',
+    title: '积累素材',
+    time: '3 — 9 个月',
+    phase: 'phase-2',
+    tasks: [
+      { id: 'p2t1', text: '参加雅思考试，取得 6.5+ 成绩' },
+      { id: 'p2t2', text: '撰写研究计划（Research Proposal）' },
+      { id: 'p2t3', text: '联系推荐人，准备推荐信 2-3 封' },
+      { id: 'p2t4', text: '发表论文或技术报告' },
+      { id: 'p2t5', text: '建立学术主页 / Google Scholar' },
+      { id: 'p2t6', text: '整理项目作品集与代码仓库' },
+      { id: 'p2t7', text: '制作英文个人陈述（SOP）' },
+    ]
+  },
+  {
+    id: 'phase3',
+    num: 'Phase 03',
+    title: '陶瓷申请',
+    time: '9 — 15 个月',
+    phase: 'phase-3',
+    tasks: [
+      { id: 'p3t1', text: '筛选目标导师（法国 + 加拿大）' },
+      { id: 'p3t2', text: '发送陶瓷邮件（目标 20-30 封）' },
+      { id: 'p3t3', text: '跟进导师回复，维持沟通' },
+      { id: 'p3t4', text: '准备并完成导师面试' },
+      { id: 'p3t5', text: '提交正式申请材料' },
+      { id: 'p3t6', text: '申请 CIFRE 企业合作岗位' },
+      { id: 'p3t7', text: '申请加拿大院校在线系统' },
+    ]
+  },
+  {
+    id: 'phase4',
+    num: 'Phase 04',
+    title: '等待入学',
+    time: '15 个月+',
+    phase: 'phase-4',
+    tasks: [
+      { id: 'p4t1', text: '等待 Offer 结果' },
+      { id: 'p4t2', text: '办理签证与行政材料' },
+      { id: 'p4t3', text: '安排住宿与生活准备' },
+      { id: 'p4t4', text: '了解当地生活与社保信息' },
+      { id: 'p4t5', text: '完成入学注册手续' },
+      { id: 'p4t6', text: '语言强化训练（法语 / 英语）' },
+    ]
+  }
+];
+
+const STORAGE_KEY = 'phd-tracker-state';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveState(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+
+function toggleTask(taskId) {
+  const state = loadState();
+  state[taskId] = !state[taskId];
+  saveState(state);
+  render();
+  showToast(state[taskId] ? '任务已完成' : '任务已取消完成');
+}
+
+function render() {
+  const state = loadState();
+  const stagesEl = document.getElementById('stages');
+  let totalTasks = 0, totalDone = 0;
+
+  let html = '';
+  STAGES_DATA.forEach(stage => {
+    let done = 0;
+    const tasksHtml = stage.tasks.map(task => {
+      const isDone = !!state[task.id];
+      if (isDone) done++;
+      totalTasks++;
+      if (isDone) totalDone++;
+      return `
+        <li class="task-item ${isDone ? 'done' : ''}" data-id="${task.id}" onclick="toggleTask('${task.id}')">
+          <div class="task-checkbox">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2 6 5 9 10 3"/>
+            </svg>
+          </div>
+          <span class="task-text">${task.text}</span>
+        </li>`;
+    }).join('');
+
+    const pct = stage.tasks.length ? Math.round(done / stage.tasks.length * 100) : 0;
+
+    html += `
+      <div class="stage-card ${stage.phase}">
+        <div class="stage-num">${stage.num}</div>
+        <div class="stage-header">
+          <div class="stage-title">${stage.title}</div>
+          <div class="stage-time">${stage.time}</div>
+        </div>
+        <div class="stage-progress">
+          <div class="stage-progress-bar">
+            <div class="stage-progress-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="stage-progress-text">${pct}%</div>
+        </div>
+        <ul class="task-list">${tasksHtml}</ul>
+      </div>`;
+  });
+
+  stagesEl.innerHTML = html;
+
+  const overallPct = totalTasks ? Math.round(totalDone / totalTasks * 100) : 0;
+  document.getElementById('overall-pct').textContent = overallPct + '%';
+  document.getElementById('overall-bar').style.width = overallPct + '%';
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+// Reset
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (confirm('确定要重置所有进度吗？此操作不可撤销。')) {
+    localStorage.removeItem(STORAGE_KEY);
+    render();
+    showToast('已重置全部进度');
+  }
+});
+
+// Init
+render();
+</script>
+</body>
+</html>
+<!-- Updated -->
