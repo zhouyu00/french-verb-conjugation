@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>法语动词变位大师</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        .french-font {
+            font-family: 'Playfair Display', serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+        .input-focus:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .correct-answer {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+        .wrong-answer {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity 0.3s ease;
+        }
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
+        }
+        .slide-enter-active, .slide-leave-active {
+            transition: all 0.3s ease;
+        }
+        .slide-enter-from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        .slide-leave-to {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        .verb-card {
+            transition: all 0.2s ease;
+        }
+        .verb-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1);
+        }
+        .tense-btn {
+            transition: all 0.2s ease;
+        }
+        .tense-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app">
+        <!-- Header -->
+        <header class="gradient-bg text-white shadow-lg">
+            <div class="max-w-6xl mx-auto px-4 py-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                            <span class="text-2xl">🇫🇷</span>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold">法语动词变位大师</h1>
+                            <p class="text-white/80 text-sm">Conjugaison Française</p>
+                        </div>
+                    </div>
+                    <nav class="flex space-x-1 bg-white/10 rounded-xl p-1">
+                        <button @click="currentView = 'practice'" 
+                                :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', currentView === 'practice' ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/10']">
+                            练习
+                        </button>
+                        <button @click="currentView = 'reference'" 
+                                :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', currentView === 'reference' ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/10']">
+                            动词表
+                        </button>
+                        <button @click="currentView = 'mistakes'" 
+                                :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all relative', currentView === 'mistakes' ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/10']">
+                            错题本
+                            <span v-if="mistakes.length > 0" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                                {{ mistakes.length }}
+                            </span>
+                        </button>
+                        <button @click="currentView = 'stats'" 
+                                :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', currentView === 'stats' ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/10']">
+                            统计
+                        </button>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Practice View -->
+        <transition name="fade" mode="out-in">
+            <div v-if="currentView === 'practice'" class="max-w-4xl mx-auto px-4 py-8">
+                <!-- Tense Selection -->
+                <div class="bg-white rounded-2xl card-shadow p-6 mb-6">
+                    <h3 class="text-gray-600 text-sm font-medium mb-4 uppercase tracking-wider">选择时态</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button v-for="tense in tenses" :key="tense.id"
+                                @click="selectTense(tense.id)"
+                                :class="['tense-btn px-4 py-3 rounded-xl text-sm font-medium border', 
+                                        selectedTense === tense.id ? 'active border-transparent' : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-indigo-300']">
+                            {{ tense.name }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Practice Card -->
+                <div class="bg-white rounded-2xl card-shadow p-8">
+                    <div class="text-center mb-8">
+                        <span class="inline-block px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-sm font-medium mb-4">
+                            {{ getTenseName(selectedTense) }}
+                        </span>
+                        <h2 class="french-font text-5xl font-bold text-gray-800 mb-2">{{ currentVerb.infinitif }}</h2>
+                        <p class="text-gray-500">{{ currentVerb.meaning }}</p>
+                        <span class="inline-block mt-2 px-3 py-1 rounded-lg text-xs font-medium"
+                              :class="getGroupClass(currentVerb.group)">
+                            {{ currentVerb.group }}
+                        </span>
+                    </div>
+
+                    <!-- Input Form -->
+                    <div class="max-w-md mx-auto space-y-4">
+                        <div v-for="(person, index) in persons" :key="index" class="flex items-center space-x-4">
+                            <span class="w-12 text-right text-gray-600 font-medium">{{ person }}</span>
+                            <input 
+                                v-model="userInputs[index]"
+                                :disabled="showAnswer"
+                                :class="['flex-1 px-4 py-3 rounded-xl border-2 text-lg transition-all input-focus', 
+                                        showAnswer ? (isCorrect(index) ? 'correct-answer' : 'wrong-answer') : 'border-gray-200']"
+                                :placeholder="showAnswer ? correctAnswers[index] : '填写变位...'"
+                                @keyup.enter="checkOrNext"
+                            >
+                            <span v-if="showAnswer && !isCorrect(index)" class="text-red-500 text-sm">
+                                {{ correctAnswers[index] }}
+                            </span>
+                            <span v-else-if="showAnswer && isCorrect(index)" class="text-green-500">
+                                ✓
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-center space-x-4 mt-8">
+                        <button v-if="!showAnswer" @click="checkAnswer"
+                                class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg">
+                            检查答案
+                        </button>
+                        <template v-else>
+                            <div class="flex items-center space-x-4">
+                                <span :class="['text-lg font-medium', score === 6 ? 'text-green-600' : 'text-orange-600']">
+                                    {{ score }}/6 正确
+                                </span>
+                                <button @click="nextVerb"
+                                        class="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg">
+                                    下一个 →
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Hint -->
+                    <div v-if="!showAnswer" class="text-center mt-6">
+                        <button @click="showHint = !showHint" class="text-indigo-500 text-sm hover:underline">
+                            {{ showHint ? '隐藏提示' : '显示词根提示' }}
+                        </button>
+                        <p v-if="showHint" class="text-gray-500 mt-2 text-sm">
+                            词根: <span class="font-medium text-indigo-600">{{ getStem(currentVerb, selectedTense) }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reference View -->
+            <div v-else-if="currentView === 'reference'" class="max-w-6xl mx-auto px-4 py-8">
+                <div class="bg-white rounded-2xl card-shadow p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">动词变位参考表</h2>
+                    
+                    <!-- Group Filter -->
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <button v-for="group in groups" :key="group"
+                                @click="selectedGroup = group"
+                                :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                                        selectedGroup === group ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">
+                            {{ group }}
+                        </button>
+                    </div>
+
+                    <!-- Verb Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div v-for="verb in filteredVerbs" :key="verb.infinitif"
+                             @click="showVerbDetail(verb)"
+                             class="verb-card bg-gray-50 rounded-xl p-4 cursor-pointer border border-gray-100">
+                            <h3 class="french-font text-xl font-bold text-gray-800">{{ verb.infinitif }}</h3>
+                            <p class="text-gray-500 text-sm">{{ verb.meaning }}</p>
+                            <span class="inline-block mt-2 px-2 py-1 rounded text-xs"
+                                  :class="getGroupClass(verb.group)">
+                                {{ verb.group }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verb Detail Modal -->
+                <transition name="fade">
+                    <div v-if="selectedVerb" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" @click.self="selectedVerb = null">
+                        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-auto p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <div>
+                                    <h2 class="french-font text-3xl font-bold text-gray-800">{{ selectedVerb.infinitif }}</h2>
+                                    <p class="text-gray-500">{{ selectedVerb.meaning }}</p>
+                                </div>
+                                <button @click="selectedVerb = null" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200">
+                                    ✕
+                                </button>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div v-for="tense in tenses" :key="tense.id" class="bg-gray-50 rounded-xl p-4">
+                                    <h4 class="font-medium text-gray-700 mb-3">{{ tense.name }}</h4>
+                                    <div class="space-y-1 text-sm">
+                                        <div v-for="(person, idx) in persons" :key="idx" class="flex justify-between">
+                                            <span class="text-gray-500">{{ person }}</span>
+                                            <span class="font-medium text-gray-800">{{ getConjugation(selectedVerb, tense.id, idx) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </transition>
+            </div>
+
+            <!-- Mistakes View -->
+            <div v-else-if="currentView === 'mistakes'" class="max-w-4xl mx-auto px-4 py-8">
+                <div class="bg-white rounded-2xl card-shadow p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">错题本</h2>
+                        <button v-if="mistakes.length > 0" @click="clearMistakes"
+                                class="px-4 py-2 text-red-500 text-sm hover:bg-red-50 rounded-lg">
+                            清空错题
+                        </button>
+                    </div>
+
+                    <div v-if="mistakes.length === 0" class="text-center py-12">
+                        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-3xl">🎉</span>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-800">太棒了！</h3>
+                        <p class="text-gray-500">你还没有错题，继续保持！</p>
+                    </div>
+
+                    <div v-else class="space-y-3">
+                        <div v-for="(mistake, index) in mistakes" :key="index"
+                             class="flex items-center justify-between bg-gray-50 rounded-xl p-4">
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <h4 class="french-font text-lg font-bold text-gray-800">{{ mistake.verb }}</h4>
+                                    <p class="text-sm text-gray-500">{{ getTenseName(mistake.tense) }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-400">{{ formatDate(mistake.date) }}</span>
+                                <button @click="practiceMistake(mistake)"
+                                        class="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600">
+                                    练习
+                                </button>
+                                <button @click="removeMistake(index)"
+                                        class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500">
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="mistakes.length > 0" class="mt-6 pt-6 border-t">
+                        <button @click="practiceAllMistakes"
+                                class="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-medium hover:opacity-90">
+                            练习所有错题
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats View -->
+            <div v-else-if="currentView === 'stats'" class="max-w-4xl mx-auto px-4 py-8">
+                <div class="grid md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-2xl card-shadow p-6 text-center">
+                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">📝</span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-800">{{ stats.totalAttempts }}</h3>
+                        <p class="text-gray-500">总练习次数</p>
+                    </div>
+                    <div class="bg-white rounded-2xl card-shadow p-6 text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">🎯</span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-800">{{ overallAccuracy }}%</h3>
+                        <p class="text-gray-500">总正确率</p>
+                    </div>
+                    <div class="bg-white rounded-2xl card-shadow p-6 text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">🔥</span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-800">{{ stats.currentStreak }}</h3>
+                        <p class="text-gray-500">连续正确</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl card-shadow p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">各时态正确率</h3>
+                    <div class="space-y-4">
+                        <div v-for="tense in tenses" :key="tense.id" class="flex items-center space-x-4">
+                            <span class="w-32 text-sm text-gray-600">{{ tense.name }}</span>
+                            <div class="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+                                     :style="{ width: getTenseAccuracy(tense.id) + '%' }"></div>
+                            </div>
+                            <span class="w-12 text-right text-sm font-medium text-gray-800">
+                                {{ getTenseAccuracy(tense.id) }}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl card-shadow p-6 mt-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-6">动词掌握程度</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div v-for="verb in verbStats.slice(0, 12)" :key="verb.infinitif" 
+                             class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                            <span class="french-font font-medium">{{ verb.infinitif }}</span>
+                            <div class="flex space-x-1">
+                                <div v-for="n in 5" :key="n" 
+                                     :class="['w-2 h-2 rounded-full', n <= verb.mastery ? 'bg-green-500' : 'bg-gray-200']">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentView: 'practice',
+                    selectedTense: 'present',
+                    selectedGroup: '全部',
+                    selectedVerb: null,
+                    showAnswer: false,
+                    showHint: false,
+                    currentVerbIndex: 0,
+                    userInputs: ['', '', '', '', '', ''],
+                    correctAnswers: [],
+                    score: 0,
+                    mistakes: [],
+                    persons: ['je', 'tu', 'il/elle', 'nous', 'vous', 'ils/elles'],
+                    tenses: [
+                        { id: 'present', name: '直陈式现在时' },
+                        { id: 'passe_compose', name: '复合过去时' },
+                        { id: 'imparfait', name: '未完成过去时' },
+                        { id: 'futur_simple', name: '简单将来时' },
+                        { id: 'conditionnel', name: '条件式现在时' },
+                        { id: 'subjonctif', name: '虚拟式现在时' }
+                    ],
+                    groups: ['全部', '第一组 (-er)', '第二组 (-ir)', '第三组 (不规则)'],
+                    verbs: [
+                        // 第一组 -er 动词
+                        {
+                            infinitif: 'parler',
+                            meaning: '说话',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['parle', 'parles', 'parle', 'parlons', 'parlez', 'parlent'],
+                                passe_compose: ['ai parlé', 'as parlé', 'a parlé', 'avons parlé', 'avez parlé', 'ont parlé'],
+                                imparfait: ['parlais', 'parlais', 'parlait', 'parlions', 'parliez', 'parlaient'],
+                                futur_simple: ['parlerai', 'parleras', 'parlera', 'parlerons', 'parlerez', 'parleront'],
+                                conditionnel: ['parlerais', 'parlerais', 'parlerait', 'parlerions', 'parleriez', 'parleraient'],
+                                subjonctif: ['parle', 'parles', 'parle', 'parlions', 'parliez', 'parlent']
+                            }
+                        },
+                        {
+                            infinitif: 'manger',
+                            meaning: '吃',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['mange', 'manges', 'mange', 'mangeons', 'mangez', 'mangent'],
+                                passe_compose: ['ai mangé', 'as mangé', 'a mangé', 'avons mangé', 'avez mangé', 'ont mangé'],
+                                imparfait: ['mangeais', 'mangeais', 'mangeait', 'mangions', 'mangiez', 'mangeaient'],
+                                futur_simple: ['mangerai', 'mangeras', 'mangera', 'mangerons', 'mangerez', 'mangeront'],
+                                conditionnel: ['mangerais', 'mangerais', 'mangerait', 'mangerions', 'mangeriez', 'mangeraient'],
+                                subjonctif: ['mange', 'manges', 'mange', 'mangions', 'mangiez', 'mangent']
+                            }
+                        },
+                        {
+                            infinitif: 'finir',
+                            meaning: '完成',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['finis', 'finis', 'finit', 'finissons', 'finissez', 'finissent'],
+                                passe_compose: ['ai fini', 'as fini', 'a fini', 'avons fini', 'avez fini', 'ont fini'],
+                                imparfait: ['finissais', 'finissais', 'finissait', 'finissions', 'finissiez', 'finissaient'],
+                                futur_simple: ['finirai', 'finiras', 'finira', 'finirons', 'finirez', 'finiront'],
+                                conditionnel: ['finirais', 'finirais', 'finirait', 'finirions', 'finiriez', 'finiraient'],
+                                subjonctif: ['finisse', 'finisses', 'finisse', 'finissions', 'finissiez', 'finissent']
+                            }
+                        },
+                        {
+                            infinitif: 'travailler',
+                            meaning: '工作',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['travaille', 'travailles', 'travaille', 'travaillons', 'travaillez', 'travaillent'],
+                                passe_compose: ['ai travaillé', 'as travaillé', 'a travaillé', 'avons travaillé', 'avez travaillé', 'ont travaillé'],
+                                imparfait: ['travaillais', 'travaillais', 'travaillait', 'travaillions', 'travailliez', 'travaillaient'],
+                                futur_simple: ['travaillerai', 'travailleras', 'travaillera', 'travaillerons', 'travaillerez', 'travailleront'],
+                                conditionnel: ['travaillerais', 'travaillerais', 'travaillerait', 'travaillerions', 'travailleriez', 'travailleraient'],
+                                subjonctif: ['travaille', 'travailles', 'travaille', 'travaillions', 'travailliez', 'travaillent']
+                            }
+                        },
+                        {
+                            infinitif: 'aimer',
+                            meaning: '爱，喜欢',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['aime', 'aimes', 'aime', 'aimons', 'aimez', 'aiment'],
+                                passe_compose: ['ai aimé', 'as aimé', 'a aimé', 'avons aimé', 'avez aimé', 'ont aimé'],
+                                imparfait: ['aimais', 'aimais', 'aimait', 'aimions', 'aimiez', 'aimaient'],
+                                futur_simple: ['aimerai', 'aimeras', 'aimera', 'aimerons', 'aimerez', 'aimeront'],
+                                conditionnel: ['aimerais', 'aimerais', 'aimerait', 'aimerions', 'aimeriez', 'aimeraient'],
+                                subjonctif: ['aime', 'aimes', 'aime', 'aimions', 'aimiez', 'aiment']
+                            }
+                        },
+                        {
+                            infinitif: 'donner',
+                            meaning: '给',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['donne', 'donnes', 'donne', 'donnons', 'donnez', 'donnent'],
+                                passe_compose: ['ai donné', 'as donné', 'a donné', 'avons donné', 'avez donné', 'ont donné'],
+                                imparfait: ['donnais', 'donnais', 'donnait', 'donnions', 'donniez', 'donnaient'],
+                                futur_simple: ['donnerai', 'donneras', 'donnera', 'donnerons', 'donnerez', 'donneront'],
+                                conditionnel: ['donnerais', 'donnerais', 'donnerait', 'donnerions', 'donneriez', 'donneraient'],
+                                subjonctif: ['donne', 'donnes', 'donne', 'donnions', 'donniez', 'donnent']
+                            }
+                        },
+                        {
+                            infinitif: 'regarder',
+                            meaning: '看',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['regarde', 'regardes', 'regarde', 'regardons', 'regardez', 'regardent'],
+                                passe_compose: ['ai regardé', 'as regardé', 'a regardé', 'avons regardé', 'avez regardé', 'ont regardé'],
+                                imparfait: ['regardais', 'regardais', 'regardait', 'regardions', 'regardiez', 'regardaient'],
+                                futur_simple: ['regarderai', 'regarderas', 'regardera', 'regarderons', 'regarderez', 'regarderont'],
+                                conditionnel: ['regarderais', 'regarderais', 'regarderait', 'regarderions', 'regarderiez', 'regarderaient'],
+                                subjonctif: ['regarde', 'regardes', 'regarde', 'regardions', 'regardiez', 'regardent']
+                            }
+                        },
+                        {
+                            infinitif: 'porter',
+                            meaning: '携带，穿',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['porte', 'portes', 'porte', 'portons', 'portez', 'portent'],
+                                passe_compose: ['ai porté', 'as porté', 'a porté', 'avons porté', 'avez porté', 'ont porté'],
+                                imparfait: ['portais', 'portais', 'portait', 'portions', 'portiez', 'portaient'],
+                                futur_simple: ['porterai', 'porteras', 'portera', 'porterons', 'porterez', 'porteront'],
+                                conditionnel: ['porterais', 'porterais', 'porterait', 'porterions', 'porteriez', 'porteraient'],
+                                subjonctif: ['porte', 'portes', 'porte', 'portions', 'portiez', 'portent']
+                            }
+                        },
+                        {
+                            infinitif: 'commencer',
+                            meaning: '开始',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['commence', 'commences', 'commence', 'commençons', 'commencez', 'commencent'],
+                                passe_compose: ['ai commencé', 'as commencé', 'a commencé', 'avons commencé', 'avez commencé', 'ont commencé'],
+                                imparfait: ['commençais', 'commençais', 'commençait', 'commencions', 'commenciez', 'commençaient'],
+                                futur_simple: ['commencerai', 'commenceras', 'commencera', 'commencerons', 'commencerez', 'commenceront'],
+                                conditionnel: ['commencerais', 'commencerais', 'commencerait', 'commencerions', 'commenceriez', 'commenceraient'],
+                                subjonctif: ['commence', 'commences', 'commence', 'commencions', 'commenciez', 'commencent']
+                            }
+                        },
+                        {
+                            infinitif: 'arriver',
+                            meaning: '到达',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['arrive', 'arrives', 'arrive', 'arrivons', 'arrivez', 'arrivent'],
+                                passe_compose: ['suis arrivé', 'es arrivé', 'est arrivé', 'sommes arrivés', 'êtes arrivés', 'sont arrivés'],
+                                imparfait: ['arrivais', 'arrivais', 'arrivait', 'arrivions', 'arriviez', 'arrivaient'],
+                                futur_simple: ['arriverai', 'arriveras', 'arrivera', 'arriverons', 'arriverez', 'arriveront'],
+                                conditionnel: ['arriverais', 'arriverais', 'arriverait', 'arriverions', 'arriveriez', 'arriveraient'],
+                                subjonctif: ['arrive', 'arrives', 'arrive', 'arrivions', 'arriviez', 'arrivent']
+                            }
+                        },
+                        {
+                            infinitif: 'habiter',
+                            meaning: '居住',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['habite', 'habites', 'habite', 'habitons', 'habitez', 'habitent'],
+                                passe_compose: ['ai habité', 'as habité', 'a habité', 'avons habité', 'avez habité', 'ont habité'],
+                                imparfait: ['habitais', 'habitais', 'habitait', 'habitions', 'habitiez', 'habitaient'],
+                                futur_simple: ['habiterai', 'habiteras', 'habitera', 'habiterons', 'habiterez', 'habiteront'],
+                                conditionnel: ['habiterais', 'habiterais', 'habiterait', 'habiterions', 'habiteriez', 'habiteraient'],
+                                subjonctif: ['habite', 'habites', 'habite', 'habitions', 'habitiez', 'habitent']
+                            }
+                        },
+                        {
+                            infinitif: 'écouter',
+                            meaning: '听',
+                            group: '第一组 (-er)',
+                            conjugations: {
+                                present: ['écoute', 'écoutes', 'écoute', 'écoutons', 'écoutez', 'écoutent'],
+                                passe_compose: ['ai écouté', 'as écouté', 'a écouté', 'avons écouté', 'avez écouté', 'ont écouté'],
+                                imparfait: ['écoutais', 'écoutais', 'écoutait', 'écoutions', 'écoutiez', 'écoutaient'],
+                                futur_simple: ['écouterai', 'écouteras', 'écoutera', 'écouterons', 'écouterez', 'écouteront'],
+                                conditionnel: ['écouterais', 'écouterais', 'écouterait', 'écouterions', 'écouteriez', 'écouteraient'],
+                                subjonctif: ['écoute', 'écoutes', 'écoute', 'écoutions', 'écoutiez', 'écoutent']
+                            }
+                        },
+                        // 第二组 -ir 动词
+                        {
+                            infinitif: 'choisir',
+                            meaning: '选择',
+                            group: '第二组 (-ir)',
+                            conjugations: {
+                                present: ['choisis', 'choisis', 'choisit', 'choisissons', 'choisissez', 'choisissent'],
+                                passe_compose: ['ai choisi', 'as choisi', 'a choisi', 'avons choisi', 'avez choisi', 'ont choisi'],
+                                imparfait: ['choisissais', 'choisissais', 'choisissait', 'choisissions', 'choisissiez', 'choisissaient'],
+                                futur_simple: ['choisirai', 'choisiras', 'choisira', 'choisirons', 'choisirez', 'choisiront'],
+                                conditionnel: ['choisirais', 'choisirais', 'choisirait', 'choisirions', 'choisiriez', 'choisiraient'],
+                                subjonctif: ['choisisse', 'choisisses', 'choisisse', 'choisissions', 'choisissiez', 'choisissent']
+                            }
+                        },
+                        {
+                            infinitif: 'réussir',
+                            meaning: '成功',
+                            group: '第二组 (-ir)',
+                            conjugations: {
+                                present: ['réussis', 'réussis', 'réussit', 'réussissons', 'réussissez', 'réussissent'],
+                                passe_compose: ['ai réussi', 'as réussi', 'a réussi', 'avons réussi', 'avez réussi', 'ont réussi'],
+                                imparfait: ['réussissais', 'réussissais', 'réussissait', 'réussissions', 'réussissiez', 'réussissaient'],
+                                futur_simple: ['réussirai', 'réussiras', 'réussira', 'réussirons', 'réussirez', 'réussiront'],
+                                conditionnel: ['réussirais', 'réussirais', 'réussirait', 'réussirions', 'réussiriez', 'réussiraient'],
+                                subjonctif: ['réussisse', 'réussisses', 'réussisse', 'réussissions', 'réussissiez', 'réussissent']
+                            }
+                        },
+                        {
+                            infinitif: 'grandir',
+                            meaning: '成长',
+                            group: '第二组 (-ir)',
+                            conjugations: {
+                                present: ['grandis', 'grandis', 'grandit', 'grandissons', 'grandissez', 'grandissent'],
+                                passe_compose: ['ai grandi', 'as grandi', 'a grandi', 'avons grandi', 'avez grandi', 'ont grandi'],
+                                imparfait: ['grandissais', 'grandissais', 'grandissait', 'grandissions', 'grandissiez', 'grandissaient'],
+                                futur_simple: ['grandirai', 'grandiras', 'grandira', 'grandirons', 'grandirez', 'grandiront'],
+                                conditionnel: ['grandirais', 'grandirais', 'grandirait', 'grandirions', 'grandiriez', 'grandiraient'],
+                                subjonctif: ['grandisse', 'grandisses', 'grandisse', 'grandissions', 'grandissiez', 'grandissent']
+                            }
+                        },
+                        {
+                            infinitif: 'réfléchir',
+                            meaning: '思考',
+                            group: '第二组 (-ir)',
+                            conjugations: {
+                                present: ['réfléchis', 'réfléchis', 'réfléchit', 'réfléchissons', 'réfléchissez', 'réfléchissent'],
+                                passe_compose: ['ai réfléchi', 'as réfléchi', 'a réfléchi', 'avons réfléchi', 'avez réfléchi', 'ont réfléchi'],
+                                imparfait: ['réfléchissais', 'réfléchissais', 'réfléchissait', 'réfléchissions', 'réfléchissiez', 'réfléchissaient'],
+                                futur_simple: ['réfléchirai', 'réfléchiras', 'réfléchira', 'réfléchirons', 'réfléchirez', 'réfléchiront'],
+                                conditionnel: ['réfléchirais', 'réfléchirais', 'réfléchirait', 'réfléchirions', 'réfléchiriez', 'réfléchiraient'],
+                                subjonctif: ['réfléchisse', 'réfléchisses', 'réfléchisse', 'réfléchissions', 'réfléchissiez', 'réfléchissent']
+                            }
+                        },
+                        // 第三组 不规则动词
+                        {
+                            infinitif: 'avoir',
+                            meaning: '有',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['ai', 'as', 'a', 'avons', 'avez', 'ont'],
+                                passe_compose: ['ai eu', 'as eu', 'a eu', 'avons eu', 'avez eu', 'ont eu'],
+                                imparfait: ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient'],
+                                futur_simple: ['aurai', 'auras', 'aura', 'aurons', 'aurez', 'auront'],
+                                conditionnel: ['aurais', 'aurais', 'aurait', 'aurions', 'auriez', 'auraient'],
+                                subjonctif: ['aie', 'aies', 'ait', 'ayons', 'ayez', 'aient']
+                            }
+                        },
+                        {
+                            infinitif: 'être',
+                            meaning: '是',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'],
+                                passe_compose: ['ai été', 'as été', 'a été', 'avons été', 'avez été', 'ont été'],
+                                imparfait: ['étais', 'étais', 'était', 'étions', 'étiez', 'étaient'],
+                                futur_simple: ['serai', 'seras', 'sera', 'serons', 'serez', 'seront'],
+                                conditionnel: ['serais', 'serais', 'serait', 'serions', 'seriez', 'seraient'],
+                                subjonctif: ['sois', 'sois', 'soit', 'soyons', 'soyez', 'soient']
+                            }
+                        },
+                        {
+                            infinitif: 'aller',
+                            meaning: '去',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['vais', 'vas', 'va', 'allons', 'allez', 'vont'],
+                                passe_compose: ['suis allé', 'es allé', 'est allé', 'sommes allés', 'êtes allés', 'sont allés'],
+                                imparfait: ['allais', 'allais', 'allait', 'allions', 'alliez', 'allaient'],
+                                futur_simple: ['irai', 'iras', 'ira', 'irons', 'irez', 'iront'],
+                                conditionnel: ['irais', 'irais', 'irait', 'irions', 'iriez', 'iraient'],
+                                subjonctif: ['aille', 'ailles', 'aille', 'allions', 'alliez', 'aillent']
+                            }
+                        },
+                        {
+                            infinitif: 'faire',
+                            meaning: '做',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'],
+                                passe_compose: ['ai fait', 'as fait', 'a fait', 'avons fait', 'avez fait', 'ont fait'],
+                                imparfait: ['faisais', 'faisais', 'faisait', 'faisions', 'faisiez', 'faisaient'],
+                                futur_simple: ['ferai', 'feras', 'fera', 'ferons', 'ferez', 'feront'],
+                                conditionnel: ['ferais', 'ferais', 'ferait', 'ferions', 'feriez', 'feraient'],
+                                subjonctif: ['fasse', 'fasses', 'fasse', 'fassions', 'fassiez', 'fassent']
+                            }
+                        },
+                        {
+                            infinitif: 'pouvoir',
+                            meaning: '能够',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['peux', 'peux', 'peut', 'pouvons', 'pouvez', 'peuvent'],
+                                passe_compose: ['ai pu', 'as pu', 'a pu', 'avons pu', 'avez pu', 'ont pu'],
+                                imparfait: ['pouvais', 'pouvais', 'pouvait', 'pouvions', 'pouviez', 'pouvaient'],
+                                futur_simple: ['pourrai', 'pourras', 'pourra', 'pourrons', 'pourrez', 'pourront'],
+                                conditionnel: ['pourrais', 'pourrais', 'pourrait', 'pourrions', 'pourriez', 'pourraient'],
+                                subjonctif: ['puisse', 'puisses', 'puisse', 'puissions', 'puissiez', 'puissent']
+                            }
+                        },
+                        {
+                            infinitif: 'vouloir',
+                            meaning: '想要',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['veux', 'veux', 'veut', 'voulons', 'voulez', 'veulent'],
+                                passe_compose: ['ai voulu', 'as voulu', 'a voulu', 'avons voulu', 'avez voulu', 'ont voulu'],
+                                imparfait: ['voulais', 'voulais', 'voulait', 'voulions', 'vouliez', 'voulaient'],
+                                futur_simple: ['voudrai', 'voudras', 'voudra', 'voudrons', 'voudrez', 'voudront'],
+                                conditionnel: ['voudrais', 'voudrais', 'voudrait', 'voudrions', 'voudriez', 'voudraient'],
+                                subjonctif: ['veuille', 'veuilles', 'veuille', 'voulions', 'vouliez', 'veuillent']
+                            }
+                        },
+                        {
+                            infinitif: 'devoir',
+                            meaning: '应该，必须',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['dois', 'dois', 'doit', 'devons', 'devez', 'doivent'],
+                                passe_compose: ['ai dû', 'as dû', 'a dû', 'avons dû', 'avez dû', 'ont dû'],
+                                imparfait: ['devais', 'devais', 'devait', 'devions', 'deviez', 'devaient'],
+                                futur_simple: ['devrai', 'devras', 'devra', 'devrons', 'devrez', 'devront'],
+                                conditionnel: ['devrais', 'devrais', 'devrait', 'devrions', 'devriez', 'devraient'],
+                                subjonctif: ['doive', 'doives', 'doive', 'devions', 'deviez', 'doivent']
+                            }
+                        },
+                        {
+                            infinitif: 'savoir',
+                            meaning: '知道',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['sais', 'sais', 'sait', 'savons', 'savez', 'savent'],
+                                passe_compose: ['ai su', 'as su', 'a su', 'avons su', 'avez su', 'ont su'],
+                                imparfait: ['savais', 'savais', 'savait', 'savions', 'saviez', 'savaient'],
+                                futur_simple: ['saurai', 'sauras', 'saura', 'saurons', 'saurez', 'sauront'],
+                                conditionnel: ['saurais', 'saurais', 'saurait', 'saurions', 'sauriez', 'sauraient'],
+                                subjonctif: ['sache', 'saches', 'sache', 'sachions', 'sachiez', 'sachent']
+                            }
+                        },
+                        {
+                            infinitif: 'venir',
+                            meaning: '来',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['viens', 'viens', 'vient', 'venons', 'venez', 'viennent'],
+                                passe_compose: ['suis venu', 'es venu', 'est venu', 'sommes venus', 'êtes venus', 'sont venus'],
+                                imparfait: ['venais', 'venais', 'venait', 'venions', 'veniez', 'venaient'],
+                                futur_simple: ['viendrai', 'viendras', 'viendra', 'viendrons', 'viendrez', 'viendront'],
+                                conditionnel: ['viendrais', 'viendrais', 'viendrait', 'viendrions', 'viendriez', 'viendraient'],
+                                subjonctif: ['vienne', 'viennes', 'vienne', 'venions', 'veniez', 'viennent']
+                            }
+                        },
+                        {
+                            infinitif: 'voir',
+                            meaning: '看见',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['vois', 'vois', 'voit', 'voyons', 'voyez', 'voient'],
+                                passe_compose: ['ai vu', 'as vu', 'a vu', 'avons vu', 'avez vu', 'ont vu'],
+                                imparfait: ['voyais', 'voyais', 'voyait', 'voyions', 'voyiez', 'voyaient'],
+                                futur_simple: ['verrai', 'verras', 'verra', 'verrons', 'verrez', 'verront'],
+                                conditionnel: ['verrais', 'verrais', 'verrait', 'verrions', 'verriez', 'verraient'],
+                                subjonctif: ['voie', 'voies', 'voie', 'voyions', 'voyiez', 'voient']
+                            }
+                        },
+                        {
+                            infinitif: 'prendre',
+                            meaning: '拿，吃',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'],
+                                passe_compose: ['ai pris', 'as pris', 'a pris', 'avons pris', 'avez pris', 'ont pris'],
+                                imparfait: ['prenais', 'prenais', 'prenait', 'prenions', 'preniez', 'prenaient'],
+                                futur_simple: ['prendrai', 'prendras', 'prendra', 'prendrons', 'prendrez', 'prendront'],
+                                conditionnel: ['prendrais', 'prendrais', 'prendrait', 'prendrions', 'prendriez', 'prendraient'],
+                                subjonctif: ['prenne', 'prennes', 'prenne', 'prenions', 'preniez', 'prennent']
+                            }
+                        },
+                        {
+                            infinitif: 'mettre',
+                            meaning: '放置',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['mets', 'mets', 'met', 'mettons', 'mettez', 'mettent'],
+                                passe_compose: ['ai mis', 'as mis', 'a mis', 'avons mis', 'avez mis', 'ont mis'],
+                                imparfait: ['mettais', 'mettais', 'mettait', 'mettions', 'mettiez', 'mettaient'],
+                                futur_simple: ['mettrai', 'mettras', 'mettra', 'mettrons', 'mettrez', 'mettront'],
+                                conditionnel: ['mettrais', 'mettrais', 'mettrait', 'mettrions', 'mettriez', 'mettraient'],
+                                subjonctif: ['mette', 'mettes', 'mette', 'mettions', 'mettiez', 'mettent']
+                            }
+                        },
+                        {
+                            infinitif: 'dire',
+                            meaning: '说',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['dis', 'dis', 'dit', 'disons', 'dites', 'disent'],
+                                passe_compose: ['ai dit', 'as dit', 'a dit', 'avons dit', 'avez dit', 'ont dit'],
+                                imparfait: ['disais', 'disais', 'disait', 'disions', 'disiez', 'disaient'],
+                                futur_simple: ['dirai', 'diras', 'dira', 'dirons', 'direz', 'diront'],
+                                conditionnel: ['dirais', 'dirais', 'dirait', 'dirions', 'diriez', 'diraient'],
+                                subjonctif: ['dise', 'dises', 'dise', 'disions', 'disiez', 'disent']
+                            }
+                        },
+                        {
+                            infinitif: 'partir',
+                            meaning: '离开',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['pars', 'pars', 'part', 'partons', 'partez', 'partent'],
+                                passe_compose: ['suis parti', 'es parti', 'est parti', 'sommes partis', 'êtes partis', 'sont partis'],
+                                imparfait: ['partais', 'partais', 'partait', 'partions', 'partiez', 'partaient'],
+                                futur_simple: ['partirai', 'partiras', 'partira', 'partirons', 'partirez', 'partiront'],
+                                conditionnel: ['partirais', 'partirais', 'partirait', 'partirions', 'partiriez', 'partiraient'],
+                                subjonctif: ['parte', 'partes', 'parte', 'partions', 'partiez', 'partent']
+                            }
+                        },
+                        {
+                            infinitif: 'connaitre',
+                            meaning: '认识',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['connais', 'connais', 'connait', 'connaissons', 'connaissez', 'connaissent'],
+                                passe_compose: ['ai connu', 'as connu', 'a connu', 'avons connu', 'avez connu', 'ont connu'],
+                                imparfait: ['connaissais', 'connaissais', 'connaissait', 'connaissions', 'connaissiez', 'connaissaient'],
+                                futur_simple: ['connaitrai', 'connaitras', 'connaitra', 'connaitrons', 'connaitrez', 'connaitront'],
+                                conditionnel: ['connaitrais', 'connaitrais', 'connaitrait', 'connaitrions', 'connaitriez', 'connaitraient'],
+                                subjonctif: ['connaisse', 'connaisses', 'connaisse', 'connaissions', 'connaissiez', 'connaissent']
+                            }
+                        },
+                        {
+                            infinitif: 'comprendre',
+                            meaning: '理解',
+                            group: '第三组 (不规则)',
+                            conjugations: {
+                                present: ['comprends', 'comprends', 'comprend', 'comprenons', 'comprenez', 'comprennent'],
+                                passe_compose: ['ai compris', 'as compris', 'a compris', 'avons compris', 'avez compris', 'ont compris'],
+                                imparfait: ['comprenais', 'comprenais', 'comprenait', 'comprenions', 'compreniez', 'comprenaient'],
+                                futur_simple: ['comprendrai', 'comprendras', 'comprendra', 'comprendrons', 'comprendrez', 'comprendront'],
+                                conditionnel: ['comprendrais', 'comprendrais', 'comprendrait', 'comprendrions', 'comprendriez', 'comprendraient'],
+                                subjonctif: ['comprenne', 'comprennes', 'comprenne', 'comprenions', 'compreniez', 'comprennent']
+                            }
+                        }
+                    ],
+                    stats: {
+                        totalAttempts: 0,
+                        correctAttempts: 0,
+                        tenseStats: {},
+                        currentStreak: 0,
+                        bestStreak: 0
+                    },
+                    verbStats: []
+                }
+            },
+            computed: {
+                currentVerb() {
+                    return this.verbs[this.currentVerbIndex];
+                },
+                filteredVerbs() {
+                    if (this.selectedGroup === '全部') {
+                        return this.verbs;
+                    }
+                    return this.verbs.filter(v => v.group === this.selectedGroup);
+                },
+                overallAccuracy() {
+                    if (this.stats.totalAttempts === 0) return 0;
+                    return Math.round((this.stats.correctAttempts / this.stats.totalAttempts) * 100);
+                }
+            },
+            methods: {
+                selectTense(tenseId) {
+                    this.selectedTense = tenseId;
+                    this.nextVerb();
+                },
+                nextVerb() {
+                    this.currentVerbIndex = Math.floor(Math.random() * this.verbs.length);
+                    this.userInputs = ['', '', '', '', '', ''];
+                    this.showAnswer = false;
+                    this.showHint = false;
+                    this.correctAnswers = this.currentVerb.conjugations[this.selectedTense];
+                },
+                checkAnswer() {
+                    this.correctAnswers = this.currentVerb.conjugations[this.selectedTense];
+                    this.score = 0;
+                    let allCorrect = true;
+                    
+                    for (let i = 0; i < 6; i++) {
+                        if (this.normalizeAnswer(this.userInputs[i]) === this.normalizeAnswer(this.correctAnswers[i])) {
+                            this.score++;
+                        } else {
+                            allCorrect = false;
+                        }
+                    }
+                    
+                    this.showAnswer = true;
+                    this.updateStats(allCorrect);
+                    
+                    if (!allCorrect) {
+                        this.addMistake();
+                    }
+                },
+                normalizeAnswer(answer) {
+                    if (!answer) return '';
+                    return answer.toLowerCase().trim().replace(/[éèêë]/g, 'e').replace(/[àâä]/g, 'a').replace(/[ùûü]/g, 'u').replace(/[îï]/g, 'i').replace(/[ôö]/g, 'o');
+                },
+                isCorrect(index) {
+                    return this.normalizeAnswer(this.userInputs[index]) === this.normalizeAnswer(this.correctAnswers[index]);
+                },
+                checkOrNext() {
+                    if (this.showAnswer) {
+                        this.nextVerb();
+                    } else {
+                        this.checkAnswer();
+                    }
+                },
+                updateStats(allCorrect) {
+                    this.stats.totalAttempts++;
+                    if (allCorrect) {
+                        this.stats.correctAttempts++;
+                        this.stats.currentStreak++;
+                        if (this.stats.currentStreak > this.stats.bestStreak) {
+                            this.stats.bestStreak = this.stats.currentStreak;
+                        }
+                    } else {
+                        this.stats.currentStreak = 0;
+                    }
+                    
+                    if (!this.stats.tenseStats[this.selectedTense]) {
+                        this.stats.tenseStats[this.selectedTense] = { attempts: 0, correct: 0 };
+                    }
+                    this.stats.tenseStats[this.selectedTense].attempts++;
+                    if (allCorrect) {
+                        this.stats.tenseStats[this.selectedTense].correct++;
+                    }
+                    
+                    this.updateVerbStats(allCorrect);
+                    this.saveData();
+                },
+                updateVerbStats(allCorrect) {
+                    let verbStat = this.verbStats.find(v => v.infinitif === this.currentVerb.infinitif);
+                    if (!verbStat) {
+                        verbStat = { infinitif: this.currentVerb.infinitif, attempts: 0, correct: 0, mastery: 0 };
+                        this.verbStats.push(verbStat);
+                    }
+                    verbStat.attempts++;
+                    if (allCorrect) {
+                        verbStat.correct++;
+                    }
+                    verbStat.mastery = Math.min(5, Math.floor((verbStat.correct / verbStat.attempts) * 5));
+                },
+                addMistake() {
+                    const existingMistake = this.mistakes.find(m => m.verb === this.currentVerb.infinitif && m.tense === this.selectedTense);
+                    if (!existingMistake) {
+                        this.mistakes.push({
+                            verb: this.currentVerb.infinitif,
+                            tense: this.selectedTense,
+                            date: new Date().toISOString()
+                        });
+                        this.saveData();
+                    }
+                },
+                removeMistake(index) {
+                    this.mistakes.splice(index, 1);
+                    this.saveData();
+                },
+                clearMistakes() {
+                    this.mistakes = [];
+                    this.saveData();
+                },
+                practiceMistake(mistake) {
+                    this.selectedTense = mistake.tense;
+                    const verbIndex = this.verbs.findIndex(v => v.infinitif === mistake.verb);
+                    if (verbIndex !== -1) {
+                        this.currentVerbIndex = verbIndex;
+                        this.currentView = 'practice';
+                        this.userInputs = ['', '', '', '', '', ''];
+                        this.showAnswer = false;
+                        this.correctAnswers = this.currentVerb.conjugations[this.selectedTense];
+                    }
+                },
+                practiceAllMistakes() {
+                    if (this.mistakes.length > 0) {
+                        this.practiceMistake(this.mistakes[0]);
+                    }
+                },
+                getTenseName(tenseId) {
+                    const tense = this.tenses.find(t => t.id === tenseId);
+                    return tense ? tense.name : tenseId;
+                },
+                getGroupClass(group) {
+                    if (group.includes('第一组')) return 'bg-blue-100 text-blue-600';
+                    if (group.includes('第二组')) return 'bg-green-100 text-green-600';
+                    return 'bg-purple-100 text-purple-600';
+                },
+                getConjugation(verb, tenseId, index) {
+                    return verb.conjugations[tenseId][index];
+                },
+                getTenseAccuracy(tenseId) {
+                    const stats = this.stats.tenseStats[tenseId];
+                    if (!stats || stats.attempts === 0) return 0;
+                    return Math.round((stats.correct / stats.attempts) * 100);
+                },
+                getStem(verb, tense) {
+                    if (tense === 'present') {
+                        if (verb.group.includes('第一组')) return verb.infinitif.slice(0, -2);
+                        if (verb.group.includes('第二组')) return verb.infinitif.slice(0, -2) + 'iss';
+                    }
+                    return '-';
+                },
+                showVerbDetail(verb) {
+                    this.selectedVerb = verb;
+                },
+                formatDate(dateStr) {
+                    const date = new Date(dateStr);
+                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                },
+                saveData() {
+                    localStorage.setItem('frenchConjugationMistakes', JSON.stringify(this.mistakes));
+                    localStorage.setItem('frenchConjugationStats', JSON.stringify(this.stats));
+                    localStorage.setItem('frenchConjugationVerbStats', JSON.stringify(this.verbStats));
+                },
+                loadData() {
+                    const mistakes = localStorage.getItem('frenchConjugationMistakes');
+                    const stats = localStorage.getItem('frenchConjugationStats');
+                    const verbStats = localStorage.getItem('frenchConjugationVerbStats');
+                    
+                    if (mistakes) {
+                        this.mistakes = JSON.parse(mistakes);
+                    }
+                    if (stats) {
+                        this.stats = JSON.parse(stats);
+                    }
+                    if (verbStats) {
+                        this.verbStats = JSON.parse(verbStats);
+                    }
+                }
+            },
+            mounted() {
+                this.loadData();
+                this.correctAnswers = this.currentVerb.conjugations[this.selectedTense];
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
