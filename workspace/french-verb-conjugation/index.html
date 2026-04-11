@@ -107,6 +107,10 @@
                                 :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', currentView === 'stats' ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/10']">
                             统计
                         </button>
+                        <button @click="currentView = 'donate'" 
+                                :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', currentView === 'donate' ? 'bg-white text-indigo-600' : 'text-white hover:bg-white/10']">
+                            ☕ 感谢支持
+                        </button>
                     </nav>
                 </div>
             </div>
@@ -359,6 +363,23 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            <div v-else-if="currentView === 'donate'" class="max-w-3xl mx-auto px-4 py-12 text-center">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-3">感谢你的支持 🥰</h2>
+                    <p class="text-gray-500">如果这个应用对你有帮助，欢迎扫码打赏一杯咖啡～</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-2xl card-shadow p-6">
+                        <div class="text-4xl mb-3">💙</div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">支付宝</h3>
+                        <img src="pics/alipay.jpg" alt="支付宝收款码" class="w-64 h-64 object-contain mx-auto rounded-xl">
+                    </div>
+                    <div class="bg-white rounded-2xl card-shadow p-6">
+                        <div class="text-4xl mb-3">💚</div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">微信</h3>
+                        <img src="pics/wechat.jpg" alt="微信收款码" class="w-64 h-64 object-contain mx-auto rounded-xl">
                     </div>
                 </div>
             </div>
